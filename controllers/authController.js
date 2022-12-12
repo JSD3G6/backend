@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const UserModel = require("../models/User");
 const AppError = require("../utils/appError");
+const UserServices = require("../services/UserServices");
 
 const genToken = (payload) => {
   const privateKey = process.env.JWT_SECRET_KEY || "S3c12et";
@@ -25,7 +26,9 @@ exports.login = async (req, res, next) => {
     }
 
     // #2 findUserByEmail
-    const foundedUser = await UserModel.findOne({ email }); // => userObject,null
+    // const foundedUser = await UserModel.findOne({ email }); // => userObject,null
+    const foundedUser = await UserServices.getUserByEmail(email); // async () => Promise
+    console.log(foundedUser);
     if (!foundedUser) {
       throw new AppError("email or password is not correct", 403);
     }
@@ -42,6 +45,7 @@ exports.login = async (req, res, next) => {
     const payload = { userId: id, firstName, lastName };
     const token = genToken(payload);
 
+    // # 5 Send Response
     res
       .status(200)
       .json({ userId: foundedUser._id, token, message: "login success", error: false });
@@ -93,7 +97,7 @@ exports.register = async (req, res, next) => {
     }
 
     // #2 Check Exist User
-    const user = await UserModel.findOne({ email }); // key : email , value : email variable
+    const user = await UserServices.getUserByEmail(email); // key : email , value : email variable
     if (user) {
       throw new AppError("this email is already taken", 400);
     }
