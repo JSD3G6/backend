@@ -4,8 +4,7 @@ const router = express.Router();
 const profileController = require("../controllers/profileController");
 
 router.get("/:userId", profileController.getProfile);
-router.patch("/", profileController.updateProfile);
-router.put("/image", profileController.updateImageProfileFromFront);
+router.patch("/:userId", profileController.updateProfile);
 router.post("/image", profileController.updateImageProfile);
 
 module.exports = router;
