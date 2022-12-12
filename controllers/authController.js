@@ -4,8 +4,50 @@ const jwt = require("jsonwebtoken");
 const UserModel = require("../models/User");
 const AppError = require("../utils/appError");
 
-exports.login = (req, res, next) => {
-  res.status(200).json({ message: "you call /auth/login from Controller" });
+const genToken = (payload) => {
+  const privateKey = process.env.JWT_SECRET_KEY || "S3c12et";
+  const options = { expiresIn: "1 days" };
+  const token = jwt.sign(payload, privateKey, options);
+  return token;
+};
+
+exports.login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    // #1 validate
+    const isEmail = validator.isEmail(email);
+    if (email.trim() === "" || password.trim() === "") {
+      throw new AppError("email or password is required", 400);
+    }
+    if (!isEmail) {
+      throw new AppError("invalid email address", 400);
+    }
+
+    // #2 findUserByEmail
+    const foundedUser = await UserModel.findOne({ email }); // => userObject,null
+    if (!foundedUser) {
+      throw new AppError("email or password is not correct", 403);
+    }
+
+    // #3 Compare password
+    const hashedPassword = foundedUser.password;
+    const isCorrect = await bcrypt.compare(password, hashedPassword);
+    if (!isCorrect) {
+      throw new AppError("email or password is not correct", 403);
+    }
+
+    // # 4 genToken
+    const { _id: id, firstName, lastName } = foundedUser;
+    const payload = { userId: id, firstName, lastName };
+    const token = genToken(payload);
+
+    res
+      .status(200)
+      .json({ userId: foundedUser._id, token, message: "login success", error: false });
+  } catch (error) {
+    next(error);
+  }
 };
 
 exports.register = async (req, res, next) => {
@@ -74,9 +116,7 @@ exports.register = async (req, res, next) => {
 
     // #5 Generate Token
     const payload = { userId: newUser._id, firstName, lastName };
-    const privateKey = process.env.JWT_SECRET_KEY || "S3c12et";
-    const options = { expiresIn: "1 days" };
-    const token = jwt.sign(payload, privateKey, options);
+    const token = genToken(payload);
 
     // #6 Response
     res
