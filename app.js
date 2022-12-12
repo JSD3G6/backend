@@ -4,7 +4,8 @@ const cors = require("cors");
 const morgan = require("morgan");
 
 const mongodb = require("./mongodb/connection");
-const authRoute = require("./routers/authRoute");
+const authRoute = require("./routes/authRoute");
+const profileRoute = require("./routes/profileRoute");
 const errorMiddleware = require("./middleware/errorMiddleware");
 
 const app = express();
@@ -21,6 +22,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // Service
 app.use("/auth", authRoute);
+app.use("/profile", profileRoute);
 
 // Error Middleware
 app.use(errorMiddleware);
