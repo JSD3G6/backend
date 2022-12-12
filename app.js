@@ -7,9 +7,29 @@ const authRoute = require("./routers/authRoute");
 const app = express();
 mongodb.connect();
 
-// process == app == global object in node
-// window == app == global object in browser
-console.log("############# DB_ENDPOINT", process.env.DB_ENDPOINT);
+// SANDBOX
+// const createUser = async () => {
+//   let registerObject = {
+//     email: "test1@gmail.com",
+//     password: "12345678",
+//     firstName: "test",
+//     lastName: "test",
+//     weight: 80,
+//     height: 180,
+//     gender: "female",
+//     birthDate: Date.now(),
+//   };
+//   try {
+//     const newUser = await UserModel.create(registerObject);
+//     //  newUser.password = "qwerty"
+//     newUser.save(); // save to database
+//     console.log("Create Success");
+//   } catch (error) {
+//     console.log("Create new user Error");
+//     console.log(error);
+//   }
+// };
+// createUser();
 
 // Allow,Parser
 app.use(cors());
