@@ -7,7 +7,7 @@ const UserServices = require("../services/UserServices");
 
 const genToken = (payload) => {
   const privateKey = process.env.JWT_SECRET_KEY || "S3c12et";
-  const options = { expiresIn: "1 days" };
+  const options = { expiresIn: 60 * 60 * 6 }; //1s
   const token = jwt.sign(payload, privateKey, options);
   return token;
 };

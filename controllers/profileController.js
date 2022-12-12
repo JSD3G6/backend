@@ -4,6 +4,7 @@ const AppError = require("../utils/appError");
 exports.getProfile = async (req, res, next) => {
   try {
     const { userId } = req.params; // params : {userId:8}
+    console.log(req.user);
 
     // #1 Find User
     let foundedUser = await UserModel.findById({ _id: userId }, { password: 0 });
@@ -28,6 +29,8 @@ exports.getProfile = async (req, res, next) => {
 };
 
 exports.updateProfile = async (req, res, next) => {
+  const { ...changeProfileField } = req.body;
+  console.log(changeProfileField);
   res.status(200).json({ message: "updateProfileFN" });
 };
 

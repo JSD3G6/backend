@@ -7,6 +7,7 @@ const mongodb = require("./mongodb/connection");
 const authRoute = require("./routes/authRoute");
 const profileRoute = require("./routes/profileRoute");
 const errorMiddleware = require("./middleware/errorMiddleware");
+const authenticate = require("./middleware/authenticateMiddleware");
 
 const app = express();
 mongodb.connect();
@@ -22,7 +23,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // Service
 app.use("/auth", authRoute);
-app.use("/profile", profileRoute);
+app.use("/profile", authenticate, profileRoute);
 
 // Error Middleware
 app.use(errorMiddleware);
