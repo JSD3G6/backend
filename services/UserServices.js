@@ -5,3 +5,8 @@ exports.getUserByEmail = async (email) => {
   const user = await UserModel.findOne({ email });
   return user;
 };
+
+exports.getUserById = async (userId) => {
+  const user = await UserModel.findById({ _id: userId }, { password: 0 });
+  return user;
+};

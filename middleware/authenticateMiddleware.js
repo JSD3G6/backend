@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const AppError = require("../utils/appError");
-const UserModel = require("../models/User");
+const UserServices = require("../services/UserServices");
 
 module.exports = async (req, res, next) => {
   // do something for authentication
@@ -23,7 +23,7 @@ module.exports = async (req, res, next) => {
 
     // #3 Find USER belong userID
     const userId = payload.userId;
-    const user = await UserModel.findById({ _id: userId }, { password: 0 });
+    const user = await UserServices.getUserById(userId);
     if (!user) {
       throw new AppError("unauthenticated", 401);
     }
