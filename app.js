@@ -1,35 +1,18 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const morgan = require("morgan");
+
 const mongodb = require("./mongodb/connection");
 const authRoute = require("./routers/authRoute");
+const errorMiddleware = require("./middleware/errorMiddleware");
 
 const app = express();
 mongodb.connect();
 
-// SANDBOX
-// const createUser = async () => {
-//   let registerObject = {
-//     email: "test1@gmail.com",
-//     password: "12345678",
-//     firstName: "test",
-//     lastName: "test",
-//     weight: 80,
-//     height: 180,
-//     gender: "female",
-//     birthDate: Date.now(),
-//   };
-//   try {
-//     const newUser = await UserModel.create(registerObject);
-//     //  newUser.password = "qwerty"
-//     newUser.save(); // save to database
-//     console.log("Create Success");
-//   } catch (error) {
-//     console.log("Create new user Error");
-//     console.log(error);
-//   }
-// };
-// createUser();
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
 
 // Allow,Parser
 app.use(cors());
@@ -38,6 +21,9 @@ app.use(express.urlencoded({ extended: false }));
 
 // Service
 app.use("/auth", authRoute);
+
+// Error Middleware
+app.use(errorMiddleware);
 
 // at first when start server && after send response : Ready listen for next Request
 const port = process.env.DEV_PORT || 8000;
