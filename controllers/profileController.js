@@ -65,8 +65,8 @@ exports.updateImageProfile = async (req, res, next) => {
     console.log(req.file);
     // #1 Validate userId inParam with userId from Token
     const { userId } = req.params;
-    // const user = req.user.toObject();
-    // validateRouteParamsWithUserID(user, userId);
+    const user = req.user.toObject();
+    validateRouteParamsWithUserID(user, userId);
 
     // #2 Check file exist
     if (!req.file) {
@@ -74,8 +74,12 @@ exports.updateImageProfile = async (req, res, next) => {
     }
 
     // #3 Upload to Cloudinary
-    const secure_url = await cloudinaryUtil.upload(req.file.path);
-    console.log(secure_url);
+    let oldPhotoUrl = user.profilePhoto;
+    let publicId; // undefined
+    if (oldPhotoUrl) {
+      publicId = cloudinaryUtil.getPublicId(oldPhotoUrl); // cr4mxeqx5zb8rlakpfkg, ""
+    }
+    const secure_url = await cloudinaryUtil.upload(req.file.path, publicId); // " cr4mxeqx5zb8rlakpfkg", undefined
 
     // #4 Save URL TO mongoDB in own user Record
     const newProfileUpdated = await UserModel.findOneAndUpdate(

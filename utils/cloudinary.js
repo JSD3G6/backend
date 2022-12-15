@@ -8,8 +8,15 @@ exports.upload = async (path, publicId) => {
     folder: "EliteMove",
   };
   if (publicId) {
-    option.publicId = publicId;
+    // "" == false
+    option.public_id = publicId;
   }
   const res = await cloudinary.uploader.upload(path, option);
   return res.secure_url;
+};
+
+exports.getPublicId = (secureUrl) => {
+  const splitUrl = secureUrl.split("/"); // ["https:","","res.cloudinary.com",...,"cr4mxeqx5zb8rlakpfkg.jpg"]
+  const publicId = splitUrl[splitUrl.length - 1].split(".")[0]; // ["cr4mxeqx5zb8rlakpfkg","jpg"]
+  return publicId;
 };
