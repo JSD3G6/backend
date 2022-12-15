@@ -1,7 +1,7 @@
 const fs = require("fs");
-const UserModel = require("../models/User");
 const AppError = require("../utils/appError");
-const cloudinaryUtil = require("../utils/cloudinary");
+const UploadServices = require("../services/UploadServices");
+const UserServices = require("../services/UserServices");
 
 const validateRouteParamsWithUserID = (user, checkId) => {
   let id = user._id.toString();
@@ -43,59 +43,73 @@ exports.updateProfile = async (req, res, next) => {
     // #2 Validate
     validateRouteParamsWithUserID(user, userId);
 
-    // #3 Update
-    const newProfileUpdated = await UserModel.findOneAndUpdate(
-      { _id: userId },
-      { ...changeProfileField },
-      { new: true, fields: { password: 0 }, runValidators: true }
-    );
+    // #3 IMAGE TASK
+    let secureUrl;
+    if (req.file) {
+      let oldPhotoUrl = user.profilePhoto;
+      let publicId; // undefined
+      if (oldPhotoUrl) {
+        publicId = UploadServices.getPublicId(oldPhotoUrl); // cr4mxeqx5zb8rlakpfkg, ""
+      }
+      secureUrl = await UploadServices.upload(req.file.path, publicId);
+    }
+    if (secureUrl) {
+      changeProfileField.profilePhoto = secureUrl;
+    }
 
-    // # LastStep
-    // const newProfileUpdated = { ...user, ...changeProfileField };
+    // #4 Update
+    const newProfileUpdated = await UserServices.findOneAndUpdateUserId(userId, changeProfileField);
+
+    // #5 LastStep
     res
       .status(200)
       .json({ message: "profile detail updated", error: false, profile: newProfileUpdated });
   } catch (error) {
     next(error);
-  }
-};
-
-exports.updateImageProfile = async (req, res, next) => {
-  try {
-    console.log(req.file);
-    // #1 Validate userId inParam with userId from Token
-    const { userId } = req.params;
-    const user = req.user.toObject();
-    validateRouteParamsWithUserID(user, userId);
-
-    // #2 Check file exist
-    if (!req.file) {
-      throw new AppError("image profile is required", 400);
-    }
-
-    // #3 Upload to Cloudinary
-    let oldPhotoUrl = user.profilePhoto;
-    let publicId; // undefined
-    if (oldPhotoUrl) {
-      publicId = cloudinaryUtil.getPublicId(oldPhotoUrl); // cr4mxeqx5zb8rlakpfkg, ""
-    }
-    const secure_url = await cloudinaryUtil.upload(req.file.path, publicId); // " cr4mxeqx5zb8rlakpfkg", undefined
-
-    // #4 Save URL TO mongoDB in own user Record
-    const newProfileUpdated = await UserModel.findOneAndUpdate(
-      { _id: userId },
-      { profilePhoto: secure_url },
-      { new: true, fields: { password: 0 }, runValidators: true }
-    );
-
-    // #5 response
-    res
-      .status(200)
-      .json({ message: "updateImageProfile", profilePhoto: newProfileUpdated.profilePhoto });
-  } catch (error) {
-    next(error);
   } finally {
-    // #6 remove pic file from local machine
-    fs.unlinkSync(req.file.path);
+    // #6 Remove Image from local
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
   }
 };
+
+// exports.updateImageProfile = async (req, res, next) => {
+//   try {
+//     console.log(req.file);
+//     // #1 Validate userId inParam with userId from Token
+//     const { userId } = req.params;
+//     const user = req.user.toObject();
+//     validateRouteParamsWithUserID(user, userId);
+
+//     // #2 Check file exist
+//     if (!req.file) {
+//       throw new AppError("image profile is required", 400);
+//     }
+
+//     // #3 Upload to Cloudinary
+//     let oldPhotoUrl = user.profilePhoto;
+//     let publicId; // undefined
+//     if (oldPhotoUrl) {
+//       publicId = cloudinaryUtil.getPublicId(oldPhotoUrl); // cr4mxeqx5zb8rlakpfkg, ""
+//     }
+//     const secure_url = await cloudinaryUtil.upload(req.file.path, publicId); // " cr4mxeqx5zb8rlakpfkg", undefined
+
+//     // #4 Save URL TO mongoDB in own user Record
+//     const newProfileUpdated = await UserModel.findOneAndUpdate(
+//       { _id: userId },
+//       { profilePhoto: secure_url },
+//       { new: true, fields: { password: 0 }, runValidators: true }
+//     );
+
+//     // #5 response
+//     res
+//       .status(200)
+//       .json({ message: "updateImageProfile", profilePhoto: newProfileUpdated.profilePhoto });
+//   } catch (error) {
+//     next(error);
+//   } finally {
+//     // #6 remove pic file from local machine
+//     fs.unlinkSync(req.file.path);
+//   }
+// };
