@@ -6,6 +6,6 @@ const profileController = require("../controllers/profileController");
 
 router.get("/:userId", profileController.getProfile);
 router.patch("/:userId", profileController.updateProfile);
-router.post("/image", upload.single("profilePic"), profileController.updateImageProfile);
+router.post("/image/:userId", upload.single("profilePhoto"), profileController.updateImageProfile);
 
 module.exports = router;

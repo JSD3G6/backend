@@ -1,3 +1,4 @@
+const fs = require("fs");
 const UserModel = require("../models/User");
 const AppError = require("../utils/appError");
 const cloudinaryUtil = require("../utils/cloudinary");
@@ -62,17 +63,35 @@ exports.updateProfile = async (req, res, next) => {
 exports.updateImageProfile = async (req, res, next) => {
   try {
     console.log(req.file);
-    // const { userId } = req.params;
+    // #1 Validate userId inParam with userId from Token
+    const { userId } = req.params;
     // const user = req.user.toObject();
     // validateRouteParamsWithUserID(user, userId);
+
+    // #2 Check file exist
     if (!req.file) {
       throw new AppError("image profile is required", 400);
     }
 
+    // #3 Upload to Cloudinary
     const secure_url = await cloudinaryUtil.upload(req.file.path);
     console.log(secure_url);
-    res.status(200).json({ message: "updateImageProfile" });
+
+    // #4 Save URL TO mongoDB in own user Record
+    const newProfileUpdated = await UserModel.findOneAndUpdate(
+      { _id: userId },
+      { profilePhoto: secure_url },
+      { new: true, fields: { password: 0 }, runValidators: true }
+    );
+
+    // #5 response
+    res
+      .status(200)
+      .json({ message: "updateImageProfile", profilePhoto: newProfileUpdated.profilePhoto });
   } catch (error) {
     next(error);
+  } finally {
+    // #6 remove pic file from local machine
+    fs.unlinkSync(req.file.path);
   }
 };
