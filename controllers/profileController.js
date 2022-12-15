@@ -1,5 +1,6 @@
 const UserModel = require("../models/User");
 const AppError = require("../utils/appError");
+const cloudinaryUtil = require("../utils/cloudinary");
 
 const validateRouteParamsWithUserID = (user, checkId) => {
   let id = user._id.toString();
@@ -59,5 +60,19 @@ exports.updateProfile = async (req, res, next) => {
 };
 
 exports.updateImageProfile = async (req, res, next) => {
-  res.status(200).json({ message: "updateImageProfile" });
+  try {
+    console.log(req.file);
+    // const { userId } = req.params;
+    // const user = req.user.toObject();
+    // validateRouteParamsWithUserID(user, userId);
+    if (!req.file) {
+      throw new AppError("image profile is required", 400);
+    }
+
+    const secure_url = await cloudinaryUtil.upload(req.file.path);
+    console.log(secure_url);
+    res.status(200).json({ message: "updateImageProfile" });
+  } catch (error) {
+    next(error);
+  }
 };
