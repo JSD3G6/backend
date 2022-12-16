@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const mongodb = require("./mongodb/connection");
 const authRoute = require("./routes/authRoute");
 const profileRoute = require("./routes/profileRoute");
+const activityRoute = require("./routes/activityRoute");
 const errorMiddleware = require("./middleware/errorMiddleware");
 const authenticate = require("./middleware/authenticateMiddleware");
 
@@ -24,10 +25,9 @@ app.use(express.urlencoded({ extended: false }));
 // Service
 app.use("/auth", authRoute);
 app.use("/profile", authenticate, profileRoute);
+app.use("/activity", activityRoute);
 
 // Error Middleware
 app.use(errorMiddleware);
 
-// at first when start server && after send response : Ready listen for next Request
-const port = process.env.DEV_PORT || 8000;
-app.listen(port, () => console.log(`app is running in port ${port}`));
+module.exports = app;

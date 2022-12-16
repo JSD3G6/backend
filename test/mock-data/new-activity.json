@@ -1,7 +1,7 @@
 {
-  "type" : "bicycling",
-  "durationMin" : 120,
+  "type" : "swimming",
+  "durationMin" : 20,
   "dateTime" : "2022-12-16T14:50:03.150Z",
-  "title" : "bicycling",
-  "caloriesBurnedCal" : 500
+  "title" : "swimming",
+  "caloriesBurnedCal" : 200
 }
