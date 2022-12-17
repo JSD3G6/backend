@@ -2,10 +2,12 @@ const validator = require("validator");
 const ActivityModel = require("../models/Activity");
 const AppError = require("../utils/appError");
 const ACTIVITY_CONST = require("../constant/activityType");
+const UploadServices = require("../services/UploadServices");
 
 exports.createActivity = async (req, res, next) => {
   try {
-    let { type, durationMin, dateTime, title } = req.body;
+    let { type, durationMin, dateTime, title } = req.body; // mandatory
+    let { details, distanceKM } = req.body; // optional
     // #1A Validate , have,don't have
     if (!type) throw new AppError("type of activity is required", 400);
     if (!durationMin) throw new AppError("duration in minutes of activity is required", 400);
@@ -18,6 +20,10 @@ exports.createActivity = async (req, res, next) => {
     if (!ACTIVITY_CONST.NAME.includes(type)) throw new AppError("invalid activity type", 400);
     if (!isDurationMinNum) throw new AppError("invalid durationMin", 400);
     if (!isDateTime || !time) throw new AppError("invalid date-time", 400);
+    if (distanceKM) {
+      let isNum = validator.isNumeric(String(distanceKM));
+      if (!isNum) throw new AppError("invalid distance in KM", 400);
+    }
 
     // #1C : didn't send type
     if (!title) title = type;
@@ -31,7 +37,7 @@ exports.createActivity = async (req, res, next) => {
 
     const caloriesBurnedCal = (1 / 60) * MET * durationMin * weight;
 
-    // #3 create new Activity
+    // #3A create new Activity
     const newActivity = new ActivityModel({
       type,
       durationMin,
@@ -40,9 +46,22 @@ exports.createActivity = async (req, res, next) => {
       caloriesBurnedCal,
     });
     if (!newActivity) throw new AppError("cannot create activity", 500);
-    await newActivity.save();
+
+    // #3B : Option Part
+    if (details) newActivity.details = details;
+    if (distanceKM) newActivity.distanceKM = distanceKM;
+
+    // #3C : Photo
+    let secureUrl;
+    if (req.file) {
+      secureUrl = await UploadServices.upload(req.file.path);
+    }
+    if (secureUrl) {
+      newActivity.photo = secureUrl;
+    }
 
     // #4 save to database
+    await newActivity.save();
 
     // #5
     res.status(201).json(newActivity);
