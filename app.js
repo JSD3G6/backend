@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: false }));
 // Service
 app.use("/auth", authRoute);
 app.use("/profile", authenticate, profileRoute);
-app.use("/activity", activityRoute);
+app.use("/activity", authenticate, activityRoute);
 
 // Error Middleware
 app.use(errorMiddleware);

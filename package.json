@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "jest --watchAll",
-    "start" : "nodemon app.js"
+    "start" : "nodemon server.js"
   },
   "author": "pavit pimchanagul",
   "license": "MIT",

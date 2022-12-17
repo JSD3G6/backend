@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
+const ACTIVITY_CONST = require("../constant/activityType");
 
 const ActivitySchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ["bicycling", "running", "hiking", "walking", "swimming"],
+    enum: ACTIVITY_CONST.NAME,
     required: true,
   },
   durationMin: {
