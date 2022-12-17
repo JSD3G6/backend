@@ -4,7 +4,7 @@ const upload = require("../middleware/upload");
 const router = express.Router();
 
 router.post("/", upload.single("photo"), activityController.createActivity);
-router.patch("/:activityId", activityController.updateActivity);
+router.patch("/:activityId", upload.single("photo"), activityController.updateActivity);
 router.delete("/:activityId", activityController.deleteActivity);
 router.get("/:activityId", activityController.getActivity);
 router.get("/all/:userId", activityController.getAllActivity);

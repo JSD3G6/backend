@@ -1,6 +1,5 @@
 const fs = require("fs");
 const validator = require("validator");
-const mongoose = require("mongoose");
 
 const ActivityModel = require("../models/Activity");
 const AppError = require("../utils/appError");
@@ -8,38 +7,56 @@ const ACTIVITY_CONST = require("../constant/activityType");
 const UploadServices = require("../services/UploadServices");
 const validateUtils = require("../utils/validate");
 
+// util for Validate
+const validateActivityInput = (activityObj) => {
+  let { type, durationMin, dateTime } = activityObj; // mandatory
+  let { distanceKM } = activityObj; // optional
+  let errorMessage = "";
+
+  // #1A Validate , have,don't have
+  if (!type) errorMessage = "type of activity is required";
+  if (!durationMin) errorMessage = "duration in minutes of activity is required";
+  if (!dateTime) errorMessage = "date-time of activity is required";
+
+  // #1B Correct Format
+  const isDurationMinNum = validator.isNumeric(String(durationMin));
+  const isDateTime = validator.isISO8601(dateTime, { strictSeparator: true });
+  const [, time] = dateTime.split("T"); // ["2022-12-17","06:23:32.367Z"]
+  if (!ACTIVITY_CONST.NAME.includes(type)) errorMessage = "invalid activity type";
+  if (!isDurationMinNum) errorMessage = "invalid durationMin";
+  if (!isDateTime || !time) errorMessage = "invalid date-time";
+  if (distanceKM) {
+    let isNum = validator.isNumeric(String(distanceKM));
+    if (!isNum) errorMessage = "invalid distance in KM";
+  }
+  return { errorMessage, statusCode: 400 };
+};
+
+const calculateMETs = (activityType, durationMin, weight) => {
+  const matchedObj = ACTIVITY_CONST.METs.find((item) => item.type === activityType);
+  if (!matchedObj) return { errorMessage: "invalid activity type", caloriesBurnedCal: 0 };
+  const MET = matchedObj.METs;
+  // const { weight, _id: userId } = user.toObject();
+  const caloriesBurnedCal = (1 / 60) * MET * durationMin * weight;
+  return { errorMessage: "", caloriesBurnedCal };
+};
 exports.createActivity = async (req, res, next) => {
   try {
     let { type, durationMin, dateTime, title } = req.body; // mandatory
     let { details, distanceKM } = req.body; // optional
-    // #1A Validate , have,don't have
-    if (!type) throw new AppError("type of activity is required", 400);
-    if (!durationMin) throw new AppError("duration in minutes of activity is required", 400);
-    if (!dateTime) throw new AppError("date-time of activity is required", 400);
+    const { weight, _id: userId } = req.user.toObject();
 
-    // #1B Correct Format
-    const isDurationMinNum = validator.isNumeric(String(durationMin));
-    const isDateTime = validator.isISO8601(dateTime, { strictSeparator: true });
-    const [, time] = dateTime.split("T"); // ["2022-12-17","06:23:32.367Z"]
-    if (!ACTIVITY_CONST.NAME.includes(type)) throw new AppError("invalid activity type", 400);
-    if (!isDurationMinNum) throw new AppError("invalid durationMin", 400);
-    if (!isDateTime || !time) throw new AppError("invalid date-time", 400);
-    if (distanceKM) {
-      let isNum = validator.isNumeric(String(distanceKM));
-      if (!isNum) throw new AppError("invalid distance in KM", 400);
-    }
+    // #1 Validate
+    let validateResult = validateActivityInput(req.body); // {errorMessage:"",statusCode:400}
+    if (validateResult.errorMessage)
+      throw new AppError(validateResult.errorMessage, validateResult.statusCode);
 
     // #1C : didn't send type
     if (!title) title = type;
 
     // #2 cal CAL
-    const matchedObj = ACTIVITY_CONST.METs.find((item) => item.type === type);
-    if (!matchedObj) throw new AppError("invalid activity type", 400);
-    const MET = matchedObj.METs;
-
-    const { weight, _id: userId } = req.user.toObject();
-
-    const caloriesBurnedCal = (1 / 60) * MET * durationMin * weight;
+    let calMETs = calculateMETs(type, durationMin, weight);
+    if (calMETs.errorMessage) throw new AppError(calMETs.errorMessage, 400);
 
     // #3A create new Activity
     const newActivity = new ActivityModel({
@@ -48,7 +65,7 @@ exports.createActivity = async (req, res, next) => {
       durationMin,
       dateTime,
       title,
-      caloriesBurnedCal,
+      caloriesBurnedCal: calMET.caloriesBurnedCal,
     });
     if (!newActivity) throw new AppError("cannot create activity", 500);
 
@@ -80,7 +97,34 @@ exports.createActivity = async (req, res, next) => {
 };
 
 exports.updateActivity = async (req, res, next) => {
-  res.status(200).json({ message: "updateActivity" });
+  try {
+    const { activityId } = req.params;
+    const { ...changeActivityDetail } = req.body;
+    const { type, durationMin } = req.body;
+    const { weight } = req.user.toObject();
+
+    // #1 Validate
+    let validateResult = validateActivityInput(changeActivityDetail); // {errorMessage:"",statusCode:400}
+    if (validateResult.errorMessage)
+      throw new AppError(validateResult.errorMessage, validateResult.statusCode);
+    // #2 Calc New METS
+    let calMETs = calculateMETs(type, durationMin, weight);
+    if (calMETs.errorMessage) throw new AppError(calMETs.errorMessage, 400);
+
+    // #3 PHOTO
+
+    // #4 Update to database
+    const newUpdatedActivity = await ActivityModel.findOneAndUpdate(
+      { _id: activityId },
+      { ...changeActivityDetail, caloriesBurnedCal: calMETs.caloriesBurnedCal },
+      { new: true, runValidators: true }
+    );
+    console.log(newUpdatedActivity);
+
+    res.status(200).json(newUpdatedActivity);
+  } catch (error) {
+    next(error);
+  }
 };
 
 exports.deleteActivity = async (req, res, next) => {
