@@ -35,12 +35,13 @@ exports.createActivity = async (req, res, next) => {
     if (!matchedObj) throw new AppError("invalid activity type", 400);
     const MET = matchedObj.METs;
 
-    const { weight } = req.user.toObject();
+    const { weight, _id: userId } = req.user.toObject();
 
     const caloriesBurnedCal = (1 / 60) * MET * durationMin * weight;
 
     // #3A create new Activity
     const newActivity = new ActivityModel({
+      userId,
       type,
       durationMin,
       dateTime,
@@ -81,6 +82,15 @@ exports.updateActivity = async (req, res, next) => {
 };
 
 exports.deleteActivity = async (req, res, next) => {
+  const { activityId } = req.params; // belong test7@gmail.com
+  const { _id: userId } = req.user.toObject(); // test6@gmail.com
+
+  // # 1
+  const result = await ActivityModel.findOneAndDelete({ _id: activityId, userId: userId });
+  if (!result) {
+    res.status(403).json({ message: "cannot delete" });
+  }
+  // # 2
   res.status(204).send();
 };
 

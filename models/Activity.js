@@ -7,6 +7,10 @@ const ActivitySchema = new mongoose.Schema({
     enum: ACTIVITY_CONST.NAME,
     required: true,
   },
+  userId: {
+    type: String,
+    required: true,
+  },
   durationMin: {
     type: Number,
     required: true,
