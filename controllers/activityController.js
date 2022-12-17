@@ -82,16 +82,20 @@ exports.updateActivity = async (req, res, next) => {
 };
 
 exports.deleteActivity = async (req, res, next) => {
-  const { activityId } = req.params; // belong test7@gmail.com
-  const { _id: userId } = req.user.toObject(); // test6@gmail.com
+  try {
+    const { activityId } = req.params; // belong test7@gmail.com
+    const { _id: userId } = req.user.toObject(); // test6@gmail.com
 
-  // # 1
-  const result = await ActivityModel.findOneAndDelete({ _id: activityId, userId: userId });
-  if (!result) {
-    res.status(403).json({ message: "cannot delete" });
+    // # 1
+    const result = await ActivityModel.findOneAndDelete({ _id: activityId, userId: userId });
+    if (!result) {
+      res.status(403).json({ message: "cannot delete" });
+    }
+    // # 2
+    res.status(204).send();
+  } catch (error) {
+    next(error);
   }
-  // # 2
-  res.status(204).send();
 };
 
 exports.getActivity = async (req, res, next) => {
