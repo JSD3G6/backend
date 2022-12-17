@@ -19,10 +19,12 @@ const validateMandatory = (activityObj) => {
 };
 
 const validateType = (type) => {
+  console.log("TYPE", type);
   if (!ACTIVITY_CONST.NAME.includes(type)) return { errorMessage: "invalid activity type" };
   return { errorMessage: "" };
 };
 const validateDurationMin = (durationMin) => {
+  console.log("DurationMin", durationMin);
   const isDurationMinNum = validator.isNumeric(String(durationMin));
   if (!isDurationMinNum) return { errorMessage: "invalid durationMin" };
   return { errorMessage: "" };
@@ -85,7 +87,7 @@ exports.createActivity = async (req, res, next) => {
       durationMin,
       dateTime,
       title,
-      caloriesBurnedCal: calMETs.caloriesBurnedCal,
+      caloriesBurnedCal: Math.round(calMETs.caloriesBurnedCal),
     });
     if (!newActivity) throw new AppError("cannot create activity", 500);
 
@@ -120,25 +122,45 @@ exports.updateActivity = async (req, res, next) => {
   try {
     const { activityId } = req.params;
     const { ...changeActivityDetail } = req.body;
-    const { type, durationMin } = req.body;
-    const { weight } = req.user.toObject();
+    const { type, durationMin, dateTime, distanceKM } = req.body;
+    const { weight } = req.user.toObject(); // oldW not currentW
 
     // #1 Validate INPUT
-    let validateResult = validateFormat(changeActivityDetail); // {errorMessage:"",statusCode:400}
-    if (validateResult.errorMessage)
-      throw new AppError(validateResult.errorMessage, validateResult.statusCode);
+    if (type) {
+      console.log("TYPE VALIDATE");
+      let { errorMessage } = validateType(type);
+      if (errorMessage) throw new AppError(errorMessage, 400);
+    }
+    if (durationMin) {
+      let { errorMessage } = validateDurationMin(durationMin);
+      if (errorMessage) throw new AppError(errorMessage, 400);
+    }
+    if (dateTime) {
+      let { errorMessage } = validateDateTime(dateTime);
+      if (errorMessage) throw new AppError(errorMessage, 400);
+    }
+    if (distanceKM) {
+      let { errorMessage } = validateDistanceInKM(distanceKM);
+      if (errorMessage) throw new AppError(errorMessage, 400);
+    }
 
-    // #2 Calc New METs
-    let calMETs = calculateMETs(type, durationMin, weight);
-    if (calMETs.errorMessage) throw new AppError(calMETs.errorMessage, 400);
-
-    // #3 Intermediate : find Old Activity
+    // #2 Intermediate : find Old Activity
     const activity = await ActivityModel.findById(activityId);
-    console.log(activity);
     if (!activity) throw new AppError("cannot get activity", 404);
 
-    // #4A Modify for Calc
-    changeActivityDetail.caloriesBurnedCal = calMETs.caloriesBurnedCal;
+    // #3 Calc New METs When Need
+    let isTypeChange = activity.toObject().type !== type;
+    let isDurationChange = activity.toObject().durationMin !== Number(durationMin);
+
+    let currentType = type ? type : activity.toObject().type;
+    let currentDurationMin = durationMin ? durationMin : activity.toObject().durationMin;
+
+    if (isTypeChange || isDurationChange) {
+      console.log("NEW CAL");
+      let calMETs = calculateMETs(currentType, currentDurationMin, weight);
+      if (calMETs.errorMessage) throw new AppError(calMETs.errorMessage, 400);
+      changeActivityDetail.caloriesBurnedCal = Math.round(calMETs.caloriesBurnedCal);
+    }
 
     // #4B Modify for PHOTO
     let secureUrl;
