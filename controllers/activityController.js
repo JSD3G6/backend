@@ -1,4 +1,6 @@
+const fs = require("fs");
 const validator = require("validator");
+
 const ActivityModel = require("../models/Activity");
 const AppError = require("../utils/appError");
 const ACTIVITY_CONST = require("../constant/activityType");
@@ -67,6 +69,10 @@ exports.createActivity = async (req, res, next) => {
     res.status(201).json(newActivity);
   } catch (error) {
     next(error);
+  } finally {
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
   }
 };
 
