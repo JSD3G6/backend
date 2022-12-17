@@ -88,6 +88,7 @@ exports.createActivity = async (req, res, next) => {
       dateTime,
       title,
       caloriesBurnedCal: Math.round(calMETs.caloriesBurnedCal),
+      weight,
     });
     if (!newActivity) throw new AppError("cannot create activity", 500);
 
@@ -123,7 +124,7 @@ exports.updateActivity = async (req, res, next) => {
     const { activityId } = req.params;
     const { ...changeActivityDetail } = req.body;
     const { type, durationMin, dateTime, distanceKM } = req.body;
-    const { weight } = req.user.toObject(); // oldW not currentW
+    // const { weight } = req.user.toObject(); // oldW not currentW
 
     // #1 Validate INPUT
     if (type) {
@@ -157,7 +158,7 @@ exports.updateActivity = async (req, res, next) => {
 
     if (isTypeChange || isDurationChange) {
       console.log("NEW CAL");
-      let calMETs = calculateMETs(currentType, currentDurationMin, weight);
+      let calMETs = calculateMETs(currentType, currentDurationMin, activity.toObject().weight);
       if (calMETs.errorMessage) throw new AppError(calMETs.errorMessage, 400);
       changeActivityDetail.caloriesBurnedCal = Math.round(calMETs.caloriesBurnedCal);
     }

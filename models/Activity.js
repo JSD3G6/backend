@@ -36,6 +36,10 @@ const ActivitySchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  weight: {
+    type: Number,
+    required: true,
+  },
 });
 
 const ActivityModel = mongoose.model("Activity", ActivitySchema);
