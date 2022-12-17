@@ -1,5 +1,6 @@
 const fs = require("fs");
 const validator = require("validator");
+const mongoose = require("mongoose");
 
 const ActivityModel = require("../models/Activity");
 const AppError = require("../utils/appError");
@@ -100,7 +101,23 @@ exports.deleteActivity = async (req, res, next) => {
 };
 
 exports.getActivity = async (req, res, next) => {
-  res.status(200).json({ message: "getActivity" });
+  try {
+    const { activityId } = req.params;
+
+    // # 1  Validate MongoId
+    // const obj = mongoose.Types.ObjectId(activityId);
+    // let validId = validator.isMongoId(obj._id);
+    // if (validId) throw new AppError("invalid activityId", 400);
+
+    // # 2 Query
+    const activity = await ActivityModel.findById(activityId);
+    if (!activity) {
+      return res.status(404).json({ message: "cannot find activity", error: false });
+    }
+    res.status(200).json({ message: "success", error: false, activityDetail: activity });
+  } catch (error) {
+    next(error);
+  }
 };
 
 exports.getAllActivity = async (req, res, next) => {
@@ -129,7 +146,9 @@ exports.getAllActivity = async (req, res, next) => {
       .skip(skipItems)
       .limit(pageSize);
 
-    res.status(200).json({ message: "getAllActivity", activities: query, pageNumber: +page });
+    res
+      .status(200)
+      .json({ message: "success", error: false, activities: query, pageNumber: +page });
   } catch (error) {
     next(error);
   }
