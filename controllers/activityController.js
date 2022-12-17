@@ -5,6 +5,7 @@ const ActivityModel = require("../models/Activity");
 const AppError = require("../utils/appError");
 const ACTIVITY_CONST = require("../constant/activityType");
 const UploadServices = require("../services/UploadServices");
+const validateUtils = require("../utils/validate");
 
 exports.createActivity = async (req, res, next) => {
   try {
@@ -103,5 +104,33 @@ exports.getActivity = async (req, res, next) => {
 };
 
 exports.getAllActivity = async (req, res, next) => {
-  res.status(200).json({ message: "getAllActivity" });
+  try {
+    // #1 Accept GET INPUT
+    const { userId } = req.params;
+    const { activityType, sort_by, page = 1, pageSize = 10 } = req.query;
+    const user = req.user;
+
+    // #2 Validate
+    const isValid = validateUtils.checkUserWithUserID(user, userId);
+    if (!isValid) throw new AppError("forbidden", 403);
+    if (page < 1) throw new AppError("invalid query", 400);
+
+    // #3
+    // DESC : z-a : new -> old == -1 ,ASC : a-z : old -> new == 1
+    // filter option : type
+    let filterCondition = {};
+    if (activityType) filterCondition["type"] = activityType;
+    let sortOrder = sort_by === "asc" ? 1 : -1; // by default == desc (new -> old)
+    let skipItems = (page - 1) * pageSize;
+
+    // #4 Query from database
+    let query = await ActivityModel.find(filterCondition)
+      .sort({ dateTime: sortOrder })
+      .skip(skipItems)
+      .limit(pageSize);
+
+    res.status(200).json({ message: "getAllActivity", activities: query, pageNumber: +page });
+  } catch (error) {
+    next(error);
+  }
 };

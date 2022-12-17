@@ -7,6 +7,6 @@ router.post("/", upload.single("photo"), activityController.createActivity);
 router.patch("/:activityId", activityController.updateActivity);
 router.delete("/:activityId", activityController.deleteActivity);
 router.get("/:activityId", activityController.getActivity);
-router.get("/", activityController.getAllActivity);
+router.get("/all/:userId", activityController.getAllActivity);
 
 module.exports = router;
