@@ -23,6 +23,10 @@ exports.getStatistics = async (req, res, next) => {
       if (errorMessage) throw new AppError(errorMessage, 400);
       filterCondition.type = activityType; //{type:"running"}
     }
+    let durationArr = ["week", "month", "year"];
+    if (!durationArr.includes(duration)) {
+      throw new AppError("invalid query in duration", 400);
+    }
 
     let start, end;
     let searchDayObj = date ? new Date(date) : new Date(); // UTC:000 : UTC with SpecificTime
