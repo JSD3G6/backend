@@ -6,9 +6,17 @@ const dateUtils = require("../utils/date");
 exports.getStatistics = async (req, res, next) => {
   try {
     const user = req.user.toObject();
-    const { activityType, duration = "week" } = req.query; // activityType = undefined === allType
+    const { activityType, duration = "week", range } = req.query; // activityType = undefined === allType
 
     let filterCondition = { userId: user._id };
+    // filter condition
+    // 1.By userId
+    // 2.By type
+    // 3.By time {dateTime : {$gte: "2022-10-12", $lte: new Date()}}
+    //   - day : complete
+    //   - month :
+    //   - year :
+    //   - range :
 
     if (activityType) {
       let { errorMessage } = validateUtils.validateType(activityType);
@@ -16,16 +24,21 @@ exports.getStatistics = async (req, res, next) => {
       filterCondition.type = activityType; //{type:"running"}
     }
 
-    const now = new Date();
-    const [start, end] = dateUtils.findWeekInterval(now);
+    let start, end;
+    let searchDay = new Date(); // UTC
+    searchDay = searchDay.toISOString().split("T")[0]; // YYYY-MM-DD
+    if (duration === "week") {
+      [start, end] = dateUtils.findWeekInterval(searchDay);
+    } else if (duration === "month") {
+      [start, end] = dateUtils.findMonthInterval(searchDay);
+    } else if (duration === "year") {
+      [start, end] = dateUtils.findYearInterval(searchDay);
+    }
+
     filterCondition.dateTime = {
       $gte: new Date(start),
       $lte: new Date(end),
     };
-    // filter condition
-    // 1.belong to userId
-    // 2.time {dateTime : {$gte: "2022-10-12", $lte: new Date()}}
-    // 3.type
 
     const activityLists = await ActivityModel.find(filterCondition);
     res.status(200).json({ message: "get stat", activityLists });
