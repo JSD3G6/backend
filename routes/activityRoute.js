@@ -8,5 +8,6 @@ router.patch("/:activityId", upload.single("photo"), activityController.updateAc
 router.delete("/:activityId", activityController.deleteActivity);
 router.get("/:activityId", activityController.getActivity);
 router.get("/all/:userId", activityController.getAllActivity);
+router.get("/type/all", activityController.getActivityType);
 
 module.exports = router;
