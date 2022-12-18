@@ -38,14 +38,13 @@ exports.getStatistics = async (req, res, next) => {
     } else if (duration === "year") {
       [start, end] = dateUtils.findYearInterval(searchDayObj);
     }
-    console.log("START", start);
-    console.log("END", end);
+
     filterCondition.dateTime = {
       $gte: new Date(`${start}T00:00:00.000+0700`),
       $lt: new Date(`${end}T00:00:00.000+0700`),
     };
 
-    const activityLists = await ActivityModel.find(filterCondition);
+    const activityLists = await ActivityModel.find(filterCondition).sort({ dateTime: 1 });
 
     let summarizeData = [];
     let totalDurationMin = 0;
