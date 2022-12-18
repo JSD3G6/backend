@@ -42,7 +42,38 @@ exports.getStatistics = async (req, res, next) => {
     };
 
     const activityLists = await ActivityModel.find(filterCondition);
-    res.status(200).json({ message: "get stat", activityLists });
+
+    let summarizeData = [];
+    let totalDurationMin = 0;
+    let totalCaloriesBurnedCal = 0;
+    let totalCount = 0;
+    if (activityLists.length > 0) {
+      const data = activityLists.reduce((acc, item) => {
+        let { type, durationMin, caloriesBurnedCal, distanceKM } = item;
+        console.log(type, durationMin, caloriesBurnedCal, distanceKM);
+        const matchIndex = acc.findIndex((obj) => obj.type === type);
+        if (matchIndex !== -1) {
+          acc[matchIndex] = { ...acc[matchIndex], count: acc[matchIndex]["count"] + 1 };
+        } else {
+          acc.push({ type: type, count: 1 });
+        }
+        totalCount++;
+        totalDurationMin += durationMin;
+        totalCaloriesBurnedCal += caloriesBurnedCal;
+        return acc;
+      }, []);
+
+      summarizeData = data.map((item) => ({
+        ...item,
+        percent: +((item.count / totalCount) * 100).toFixed(2),
+      }));
+    }
+
+    let sendObject = {
+      summary: { type: summarizeData, totalCount, totalCaloriesBurnedCal, totalDurationMin },
+      raw: activityLists,
+    };
+    res.status(200).json(sendObject);
   } catch (error) {
     next(error);
   }
