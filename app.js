@@ -7,6 +7,7 @@ const mongodb = require("./mongodb/connection");
 const authRoute = require("./routes/authRoute");
 const profileRoute = require("./routes/profileRoute");
 const activityRoute = require("./routes/activityRoute");
+const statisticsRoute = require("./routes/statisticsRoute");
 const errorMiddleware = require("./middleware/errorMiddleware");
 const authenticate = require("./middleware/authenticateMiddleware");
 
@@ -26,6 +27,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/auth", authRoute);
 app.use("/profile", authenticate, profileRoute);
 app.use("/activity", authenticate, activityRoute);
+app.use("/statistics", authenticate, statisticsRoute);
 
 // Error Middleware
 app.use(errorMiddleware);

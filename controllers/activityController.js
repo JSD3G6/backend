@@ -264,6 +264,5 @@ exports.getAllActivity = async (req, res, next) => {
 };
 
 exports.getActivityType = (req, res, next) => {
-  console.log("here");
   res.status(200).json(ACTIVITY_CONST.NAME);
 };
