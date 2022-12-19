@@ -23,16 +23,16 @@
 // };
 
 const convertDateObjToDateString = (dateObj) => {
-  let [m, d, y] = dateObj.toLocaleDateString().split("/");
-  d = d.length === 1 ? "0" + d : "" + d;
-  m = m.length === 1 ? "0" + m : "" + m;
+  let [m, d, y] = dateObj.toLocaleDateString().split('/');
+  d = d.length === 1 ? '0' + d : '' + d;
+  m = m.length === 1 ? '0' + m : '' + m;
   return `${y}-${m}-${d}`;
 };
 
 // MAIN FN
 const findYearInterval = (dateObj) => {
   let utilizeDate = convertDateObjToDateString(dateObj);
-  let arrDate = utilizeDate.split("-");
+  let arrDate = utilizeDate.split('-');
   let year = arrDate[0];
 
   let startYear = `${year}-01-01`;
@@ -41,17 +41,17 @@ const findYearInterval = (dateObj) => {
 };
 const findMonthInterval = (dateObj) => {
   let utilizeDate = convertDateObjToDateString(dateObj);
-  let arrDate = utilizeDate.split("-");
+  let arrDate = utilizeDate.split('-');
   let month = arrDate[1];
   let year = arrDate[0];
 
   let canNextMonth = month != 12;
   let newNextMonth;
   if (canNextMonth) {
-    newNextMonth = "0" + (Number(month) + 1);
+    newNextMonth = '0' + (Number(month) + 1);
   }
   let summarizeEndYear = canNextMonth ? year : +year + 1;
-  let summarizeEndMonth = canNextMonth ? newNextMonth : "01";
+  let summarizeEndMonth = canNextMonth ? newNextMonth : '01';
   // let lastDayOfMonth = daysInMonth(month, year);
   let startMonth = `${year}-${month}-01`;
   let endMonth = `${summarizeEndYear}-${summarizeEndMonth}-01`;
@@ -71,8 +71,18 @@ const findWeekInterval = (dateObj) => {
   const saturday = new Date(mySaturdayTime); // lte
 
   // toLocale UNIX -> LOCALE
-  const start = sunday.toLocaleString().split(", ")[0];
-  const end = saturday.toLocaleString().split(", ")[0];
+  const start = sunday.toLocaleString().split(', ')[0];
+  const end = saturday.toLocaleString().split(', ')[0];
   return [start, end];
 };
-module.exports = { findWeekInterval, findMonthInterval, findYearInterval };
+
+const calAgeByBirthDate = (birthDate) => {
+  const now = new Date();
+  const nowYr = now.getFullYear();
+
+  const birth = new Date(birthDate);
+  const birthYr = birth.getFullYear();
+  const age = nowYr - birthYr;
+  return age;
+};
+module.exports = { findWeekInterval, findMonthInterval, findYearInterval, calAgeByBirthDate };

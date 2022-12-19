@@ -1,4 +1,4 @@
-const UserModel = require("../models/User");
+const UserModel = require('../models/User');
 
 exports.getUserByEmail = async (email) => {
   // find userBy Email
