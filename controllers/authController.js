@@ -52,6 +52,7 @@ exports.login = async (req, res, next) => {
       email: foundedUser.email,
       firstName: foundedUser.firstName,
       lastName: foundedUser.lastName,
+      profilePhoto: foundedUser.profilePhoto,
     };
     // # 5 Send Response
     res.status(200).json({
