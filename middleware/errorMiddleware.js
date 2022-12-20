@@ -22,4 +22,5 @@ module.exports = (err, req, res, next) => {
   }
 
   res.status(statusCode).json({ message: message, error: true });
+  console.log("AFTER SEND RES");
 };

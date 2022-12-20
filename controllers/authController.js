@@ -1,12 +1,12 @@
-const validator = require('validator');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const UserModel = require('../models/User');
-const AppError = require('../utils/appError');
-const UserServices = require('../services/UserServices');
+const validator = require("validator");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const UserModel = require("../models/User");
+const AppError = require("../utils/appError");
+const UserServices = require("../services/UserServices");
 
 const genToken = (payload) => {
-  const privateKey = process.env.JWT_SECRET_KEY || 'S3c12et';
+  const privateKey = process.env.JWT_SECRET_KEY || "S3c12et";
   const options = { expiresIn: 60 * 60 * 6 }; //1s
   const token = jwt.sign(payload, privateKey, options);
   return token;
@@ -18,11 +18,11 @@ exports.login = async (req, res, next) => {
     console.log(req.body);
     // #1 validate
     const isEmail = validator.isEmail(email);
-    if (email.trim() === '' || password.trim() === '') {
-      throw new AppError('email or password is required', 400);
+    if (email.trim() === "" || password.trim() === "") {
+      throw new AppError("email or password is required", 400);
     }
     if (!isEmail) {
-      throw new AppError('invalid email address', 400);
+      throw new AppError("invalid email address", 400);
     }
 
     // #2 findUserByEmail
@@ -30,7 +30,7 @@ exports.login = async (req, res, next) => {
     const foundedUser = await UserServices.getUserByEmail(email); // async () => Promise
     console.log(foundedUser);
     if (!foundedUser) {
-      throw new AppError('email or password is not correct', 403);
+      throw new AppError("email or password is not correct", 403);
     }
 
     // #3 Compare password
@@ -38,7 +38,7 @@ exports.login = async (req, res, next) => {
     console.log(hashedPassword);
     const isCorrect = await bcrypt.compare(password, hashedPassword);
     if (!isCorrect) {
-      throw new AppError('email or password is not correct', 403);
+      throw new AppError("email or password is not correct", 403);
     }
     console.log(isCorrect);
     // # 4 genToken
@@ -48,6 +48,7 @@ exports.login = async (req, res, next) => {
 
     // # 4B Build UserObject
     const user = {
+      _id: id,
       email: foundedUser.email,
       firstName: foundedUser.firstName,
       lastName: foundedUser.lastName,
@@ -57,11 +58,12 @@ exports.login = async (req, res, next) => {
       userId: foundedUser._id,
       user: user,
       token,
-      message: 'login success',
+      message: "login success",
       error: false,
     });
   } catch (error) {
     next(error);
+    console.log(error);
   }
 };
 
@@ -86,22 +88,22 @@ exports.register = async (req, res, next) => {
     const isDate = validator.isDate(birthDate);
 
     if (!isEmail) {
-      throw new AppError('email address is not correct', 400);
+      throw new AppError("email address is not correct", 400);
     }
     if (!isWeightNum || !isHeightNum) {
-      throw new AppError('weight or height is not a number', 400);
+      throw new AppError("weight or height is not a number", 400);
     }
-    if (firstName.trim() === '') {
-      throw new AppError('firstName is required', 400);
+    if (firstName.trim() === "") {
+      throw new AppError("firstName is required", 400);
     }
-    if (lastName.trim() === '') {
-      throw new AppError('lastName is required', 400);
+    if (lastName.trim() === "") {
+      throw new AppError("lastName is required", 400);
     }
-    if (gender.trim() === '') {
-      throw new AppError('gender is required', 400);
+    if (gender.trim() === "") {
+      throw new AppError("gender is required", 400);
     }
     if (!isDate) {
-      throw new AppError('invalid date format', 400);
+      throw new AppError("invalid date format", 400);
     }
     if (password !== confirmPassword) {
       throw new AppError("password and confirm password didn't match", 400);
@@ -110,7 +112,7 @@ exports.register = async (req, res, next) => {
     // #2 Check Exist User
     const user = await UserServices.getUserByEmail(email); // key : email , value : email variable
     if (user) {
-      throw new AppError('this email is already taken', 400);
+      throw new AppError("this email is already taken", 400);
     }
 
     // #3 Hashed Password :  by Bcrypt
@@ -136,7 +138,7 @@ exports.register = async (req, res, next) => {
     // #6 Response
     res
       .status(201)
-      .json({ userId: newUser._id, token, message: 'create user success', error: false });
+      .json({ userId: newUser._id, token, message: "create user success", error: false });
   } catch (error) {
     next(error);
   }
