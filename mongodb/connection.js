@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-async function connect() {
+const connect = async () => {
   try {
     mongoose.set("useNewUrlParser", true);
     await mongoose.connect(process.env.DB_ENDPOINT); // take time, maybe success or failed
@@ -8,6 +8,6 @@ async function connect() {
   } catch (error) {
     console.log(error);
   }
-}
+};
 
 module.exports = { connect };
