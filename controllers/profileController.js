@@ -51,9 +51,9 @@ exports.updateProfile = async (req, res, next) => {
       if (oldPhotoUrl) {
         publicId = UploadServices.getPublicId(oldPhotoUrl); // cr4mxeqx5zb8rlakpfkg, ""
       }
-
-      // console.log(req.file.path);
-      secureUrl = await UploadServices.upload(req.file.path, publicId);
+      let actualPath = process.cwd() + "/" + req.file.path;
+      console.log(actualPath);
+      secureUrl = await UploadServices.upload(actualPath, publicId);
     }
     if (secureUrl) {
       changeProfileField.profilePhoto = secureUrl;
