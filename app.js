@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // Service
 app.get("/", (req, res, next) => {
-  res.send("Elite Move API V.1");
+  res.send("Elite Move API V.1.0.0");
 });
 app.use("/auth", authRoute);
 app.use("/profile", authenticate, profileRoute);
