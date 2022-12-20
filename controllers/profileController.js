@@ -1,12 +1,12 @@
-const fs = require("fs");
-const AppError = require("../utils/appError");
-const UploadServices = require("../services/UploadServices");
-const UserServices = require("../services/UserServices");
+const fs = require('fs');
+const AppError = require('../utils/appError');
+const UploadServices = require('../services/UploadServices');
+const UserServices = require('../services/UserServices');
 
 const validateRouteParamsWithUserID = (user, checkId) => {
   let id = user._id.toString();
   if (id !== checkId) {
-    throw new AppError("forbidden", 403);
+    throw new AppError('forbidden', 403);
   }
 };
 
@@ -27,7 +27,7 @@ exports.getProfile = async (req, res, next) => {
     const age = nowYr - birthYr;
     user.age = age;
 
-    res.status(200).json({ message: "success", error: false, profile: user });
+    res.status(200).json({ message: 'success', error: false, profile: user });
   } catch (error) {
     next(error);
   }
@@ -63,7 +63,7 @@ exports.updateProfile = async (req, res, next) => {
     // #5 LastStep
     res
       .status(200)
-      .json({ message: "profile detail updated", error: false, profile: newProfileUpdated });
+      .json({ message: 'profile detail updated', error: false, profile: newProfileUpdated });
   } catch (error) {
     next(error);
   } finally {
@@ -113,3 +113,11 @@ exports.updateProfile = async (req, res, next) => {
 //     fs.unlinkSync(req.file.path);
 //   }
 // };
+
+exports.getMe = async (req, res, next) => {
+  try {
+    res.status(200).json({ user: req.user });
+  } catch (error) {
+    next(error);
+  }
+};

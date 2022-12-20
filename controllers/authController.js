@@ -15,7 +15,7 @@ const genToken = (payload) => {
 exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
+    console.log(req.body);
     // #1 validate
     const isEmail = validator.isEmail(email);
     if (email.trim() === '' || password.trim() === '') {
@@ -40,7 +40,7 @@ exports.login = async (req, res, next) => {
     if (!isCorrect) {
       throw new AppError('email or password is not correct', 403);
     }
-
+    console.log(isCorrect);
     // # 4 genToken
     const { _id: id, firstName, lastName } = foundedUser;
     const payload = { userId: id, firstName, lastName };
