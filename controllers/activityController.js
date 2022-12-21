@@ -1,4 +1,5 @@
 const fs = require("fs");
+const mongoose = require("mongoose");
 const validator = require("validator");
 
 const ActivityModel = require("../models/Activity");
@@ -244,7 +245,8 @@ exports.getAllActivity = async (req, res, next) => {
     // #3
     // DESC : z-a : new -> old == -1 ,ASC : a-z : old -> new == 1
     // filter option : type
-    let filterCondition = { _id: userId };
+    let filterCondition = { userId: mongoose.Types.ObjectId(userId) };
+    console.log(filterCondition);
     if (activityType) filterCondition["type"] = activityType;
     let sortOrder = sort_by === "asc" ? 1 : -1; // by default == desc (new -> old)
     let skipItems = (page - 1) * pageSize;

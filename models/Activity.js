@@ -7,10 +7,7 @@ const ActivitySchema = new mongoose.Schema({
     enum: ACTIVITY_CONST.NAME,
     required: true,
   },
-  userId: {
-    type: String,
-    required: true,
-  },
+  userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
   durationMin: {
     type: Number,
     required: true,
