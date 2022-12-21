@@ -244,7 +244,7 @@ exports.getAllActivity = async (req, res, next) => {
     // #3
     // DESC : z-a : new -> old == -1 ,ASC : a-z : old -> new == 1
     // filter option : type
-    let filterCondition = {};
+    let filterCondition = { _id: userId };
     if (activityType) filterCondition["type"] = activityType;
     let sortOrder = sort_by === "asc" ? 1 : -1; // by default == desc (new -> old)
     let skipItems = (page - 1) * pageSize;
