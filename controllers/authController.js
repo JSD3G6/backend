@@ -48,12 +48,9 @@ exports.login = async (req, res, next) => {
 
     // # 4B Build UserObject
     const user = {
-      _id: id,
-      email: foundedUser.email,
-      firstName: foundedUser.firstName,
-      lastName: foundedUser.lastName,
-      profilePhoto: foundedUser.profilePhoto,
+      ...foundedUser.toObject(),
     };
+    delete user["password"];
     // # 5 Send Response
     res.status(200).json({
       userId: foundedUser._id,
