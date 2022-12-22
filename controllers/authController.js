@@ -142,10 +142,19 @@ exports.register = async (req, res, next) => {
     const payload = { userId: newUser._id, firstName, lastName };
     const token = genToken(payload);
 
+    // #5A
+    const sendUser = newUser.toObject();
+    delete sendUser.password;
     // #6 Response
     res
       .status(201)
-      .json({ userId: newUser._id, token, message: "create user success", error: false });
+      .json({
+        userId: newUser._id,
+        user: sendUser,
+        token,
+        message: "create user success",
+        error: false,
+      });
   } catch (error) {
     next(error);
   }
