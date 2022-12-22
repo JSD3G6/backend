@@ -46,6 +46,9 @@ const UserSchema = new mongoose.Schema({
   weeklyGoalCal: {
     type: Number,
   },
+  age: {
+    type: Number,
+  },
 });
 
 // Crate Model

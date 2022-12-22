@@ -91,7 +91,7 @@ exports.createActivity = async (req, res, next) => {
       caloriesBurnedCal: Math.round(calMETs.caloriesBurnedCal),
       weight,
     });
-    if (!newActivity) throw new AppError("cannot create activity", 500);
+    if (!newActivity) throw new AppError("cannot create activity", 400);
 
     // #3B : Option Part
     if (details) newActivity.details = details;

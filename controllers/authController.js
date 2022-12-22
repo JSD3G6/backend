@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const UserModel = require("../models/User");
 const AppError = require("../utils/appError");
 const UserServices = require("../services/UserServices");
+const DateUtils = require("../utils/date");
 
 const genToken = (payload) => {
   const privateKey = process.env.JWT_SECRET_KEY || "S3c12et";
@@ -40,12 +41,16 @@ exports.login = async (req, res, next) => {
     if (!isCorrect) {
       throw new AppError("email or password is not correct", 403);
     }
-    console.log(isCorrect);
+
     // # 4 genToken
     const { _id: id, firstName, lastName } = foundedUser;
     const payload = { userId: id, firstName, lastName };
     const token = genToken(payload);
 
+    // # 4A Recalculate Age
+    const age = DateUtils.calAge(foundedUser.birthDate);
+    foundedUser.age = age;
+    await foundedUser.save();
     // # 4B Build UserObject
     const user = {
       ...foundedUser.toObject(),
@@ -116,6 +121,9 @@ exports.register = async (req, res, next) => {
     // #3 Hashed Password :  by Bcrypt
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // #3.5 CalAge
+    const age = DateUtils.calAge(birthDate);
+
     // #4 Register
     const newUser = new UserModel({
       password: hashedPassword,
@@ -126,6 +134,7 @@ exports.register = async (req, res, next) => {
       height,
       gender,
       birthDate,
+      age,
     });
     await newUser.save();
 
