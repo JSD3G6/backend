@@ -37,6 +37,7 @@ exports.updateProfile = async (req, res, next) => {
     const { userId } = req.params;
     const { ...changeProfileField } = req.body; // object destruct + rest syntax (rest of field)
     const user = req.user.toObject();
+    console.log(userId);
 
     // #2 Validate
     validateRouteParamsWithUserID(user, userId);
@@ -56,12 +57,15 @@ exports.updateProfile = async (req, res, next) => {
     if (secureUrl) {
       changeProfileField.profilePhoto = secureUrl;
     }
-
-    changeProfileField.age = DateUtils.calAge(changeProfileField.birthDate);
+    if (changeProfileField.birthDate) {
+      changeProfileField.age = DateUtils.calAge(changeProfileField.birthDate);
+    }
+    console.log(DateUtils.calAge(changeProfileField.birthDate));
 
     // #4 Update
+    console.log("1");
     const newProfileUpdated = await UserServices.findOneAndUpdateUserId(userId, changeProfileField);
-
+    console.log("2");
     // #5 LastStep
     res
       .status(200)

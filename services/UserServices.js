@@ -1,4 +1,4 @@
-const UserModel = require('../models/User');
+const UserModel = require("../models/User");
 
 exports.getUserByEmail = async (email) => {
   // find userBy Email
@@ -12,6 +12,8 @@ exports.getUserById = async (userId) => {
 };
 
 exports.findOneAndUpdateUserId = async (userId, changeProfileField) => {
+  console.log("a", userId);
+  console.log(changeProfileField);
   const newUpdatedUser = await UserModel.findOneAndUpdate(
     { _id: userId },
     { ...changeProfileField },

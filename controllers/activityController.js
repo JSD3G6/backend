@@ -256,10 +256,11 @@ exports.getAllActivity = async (req, res, next) => {
       .sort({ dateTime: sortOrder })
       .skip(skipItems)
       .limit(pageSize);
-
+    let hasNext = false;
+    if (query.length) hasNext = true;
     res
       .status(200)
-      .json({ message: "success", error: false, activities: query, pageNumber: +page });
+      .json({ message: "success", error: false, activities: query, pageNumber: +page, hasNext });
   } catch (error) {
     next(error);
   }

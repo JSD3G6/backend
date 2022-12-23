@@ -1,5 +1,6 @@
 // UTIL
 const calAge = (dateObj) => {
+  console.log(dateObj);
   let DOB = new Date(dateObj);
   let monthDiff = Date.now() - DOB.getTime();
   let ageUTC = new Date(monthDiff);
@@ -13,6 +14,42 @@ const convertDateObjToDateString = (dateObj) => {
   d = d.length === 1 ? "0" + d : "" + d;
   m = m.length === 1 ? "0" + m : "" + m;
   return `${y}-${m}-${d}`;
+};
+
+const daysInMonth = (month, year) => {
+  console.log(month);
+  switch (month) {
+    case "01":
+    case "03":
+    case "05":
+    case "07":
+    case "08":
+    case "10":
+    case "12":
+      return "31";
+    case "02":
+      return isLeapYear(year) ? "29" : "28";
+    default:
+      return "30";
+  }
+};
+
+function findTimePoint(date, type) {
+  // date in yyyy-mm-dd
+  console.log(`${date}`);
+  const t = convertDateObjToDateString(date);
+  let timePoint = t.split("-");
+  if (type === "week") return timePoint[2];
+  if (type === "month") return timePoint[2];
+  if (type === "year") return timePoint[1];
+}
+
+const findEndDayOfMonth = (date) => {
+  // date in yyyy-mm-dd
+  let year = date.split("-")[0];
+  let month = date.split("-")[1];
+  let dayCount = daysInMonth(month, year);
+  return dayCount;
 };
 
 // MAIN FN
@@ -57,8 +94,8 @@ const findWeekInterval = (dateObj) => {
   const saturday = new Date(mySaturdayTime); // lte
 
   // toLocale UNIX -> LOCALE
-  const start = sunday.toLocaleString().split(", ")[0];
-  const end = saturday.toLocaleString().split(", ")[0];
+  let start = convertDateObjToDateString(sunday);
+  let end = convertDateObjToDateString(saturday);
   return [start, end];
 };
 
@@ -77,4 +114,6 @@ module.exports = {
   findMonthInterval,
   findYearInterval,
   calAgeByBirthDate,
+  findEndDayOfMonth,
+  findTimePoint,
 };
